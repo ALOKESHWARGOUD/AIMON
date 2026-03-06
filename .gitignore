@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Coverage
+.coverage
+htmlcov/
+.coverage.*
+coverage.xml
+*.cover
+
+# Virtual environments
+.env
+.venv
+venv/
+env/
+ENV/
+
+# Pytest / mypy
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

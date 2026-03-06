@@ -172,7 +172,7 @@ class AIMONCoreRuntime:
             await module.initialize(config or {})
             
             # Register in registry
-            self.module_registry.register(name, module)
+            await self.module_registry.register(module)
             
             # Store reference
             self._modules[name] = module
@@ -196,7 +196,7 @@ class AIMONCoreRuntime:
         
         module = self._modules[name]
         await module.shutdown()
-        self.module_registry.unregister(name)
+        await self.module_registry.unregister(name)
         del self._modules[name]
         
         await logger.ainfo("module_unregistered", name=name)
@@ -212,7 +212,7 @@ class AIMONCoreRuntime:
     async def emit_event(self, event_type: str, **data) -> None:
         """Emit an event through the bus."""
         self.state.events_emitted += 1
-        await self.event_bus.emit(event_type, **data)
+        await self.event_bus.emit(event_type, "runtime", **data)
     
     async def submit_task(self, coro, priority: int = 0, timeout: Optional[float] = None):
         """

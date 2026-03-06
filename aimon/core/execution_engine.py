@@ -114,13 +114,13 @@ class ExecutionEngine:
     ) -> str:
         """
         Submit a task for execution.
-        
+
         Args:
             coro: Coroutine to execute
             priority: Task priority
             timeout: Task timeout (None = use default)
             max_retries: Number of retries on failure
-            
+
         Returns:
             Task ID
         """
@@ -132,16 +132,26 @@ class ExecutionEngine:
             timeout=timeout or self.default_timeout,
             max_retries=max_retries,
         )
-        
+
         result = TaskResult(task_id=task_id, state=TaskState.PENDING)
         self._results[task_id] = result
-        
-        # Use negative priority for heapq (lower priority value = higher priority)
-        await self._queue.put((-priority.value, task))
-        await logger.ainfo("task_submitted", task_id=task_id, priority=priority.name)
-        
+
+        # Use priority.value directly: CRITICAL=0 < HIGH=1 < NORMAL=2 < LOW=3
+        # put_nowait avoids yielding so callers can queue multiple tasks before
+        # the executor loop picks any up (important for correct priority ordering).
+        self._queue.put_nowait((priority.value, task))
+
         return task_id
-    
+
+    async def initialize(self, max_concurrent: int = None, default_timeout: float = None) -> None:
+        """Initialize / reconfigure the execution engine."""
+        if max_concurrent is not None:
+            self.max_concurrent = max_concurrent
+            self._semaphore = asyncio.Semaphore(max_concurrent)
+        if default_timeout is not None:
+            self.default_timeout = default_timeout
+        await logger.ainfo("executor_initialized", max_concurrent=self.max_concurrent)
+
     async def start(self) -> None:
         """Start the executor loop."""
         if self._running:
@@ -166,20 +176,79 @@ class ExecutionEngine:
         await logger.ainfo("executor_stopped")
     
     async def _executor_loop(self) -> None:
-        """Main executor loop."""
+        """Main executor loop.
+
+        Acquires a concurrency slot FIRST, then dequeues the highest-priority
+        pending task.  This preserves priority ordering: when a slot opens up
+        we always pick the most important queued task.
+        """
         while self._running:
+            # 1. Wait for a concurrency slot to be available.
             try:
-                # Short timeout to check _running flag periodically
-                _, task = await asyncio.wait_for(self._queue.get(), timeout=0.1)
+                await asyncio.wait_for(self._semaphore.acquire(), timeout=0.1)
             except asyncio.TimeoutError:
                 continue
             except asyncio.CancelledError:
                 break
-            
-            # Execute task with semaphore
-            exec_task = asyncio.create_task(self._execute_task(task))
+
+            # 2. Wait for a task in the priority queue.
+            try:
+                try:
+                    _, task = await asyncio.wait_for(self._queue.get(), timeout=0.1)
+                except asyncio.TimeoutError:
+                    # No task available - release the slot and retry.
+                    self._semaphore.release()
+                    continue
+            except asyncio.CancelledError:
+                self._semaphore.release()
+                break
+
+            # 3. Run the task; the slot is already held and will be released
+            #    inside _execute_task_with_slot.
+            exec_task = asyncio.create_task(self._execute_task_with_slot(task))
             self._active_tasks[task.task_id] = exec_task
-    
+
+    async def _execute_task_with_slot(self, task: "Task") -> None:
+        """Execute a task that has already acquired a semaphore slot."""
+        result = self._results[task.task_id]
+        result.state = TaskState.RUNNING
+        result.started_at = datetime.utcnow()
+
+        retry_count = 0
+        try:
+            while retry_count <= task.max_retries:
+                if retry_count > 0:
+                    result.state = TaskState.RETRYING
+                    await asyncio.sleep(min(2 ** retry_count, 60))
+
+                try:
+                    result.result = await asyncio.wait_for(task.coro, timeout=task.timeout)
+                    result.state = TaskState.COMPLETED
+                    result.completed_at = datetime.utcnow()
+                    await logger.ainfo("task_completed", task_id=task.task_id)
+                    return
+                except asyncio.TimeoutError:
+                    result.error = f"Timeout after {task.timeout}s"
+                    retry_count += 1
+                    if retry_count > task.max_retries:
+                        result.state = TaskState.FAILED
+                        result.completed_at = datetime.utcnow()
+                        return
+                except asyncio.CancelledError:
+                    result.state = TaskState.CANCELLED
+                    result.completed_at = datetime.utcnow()
+                    return
+                except Exception as e:
+                    result.error = str(e)
+                    retry_count += 1
+                    if retry_count > task.max_retries:
+                        result.state = TaskState.FAILED
+                        result.completed_at = datetime.utcnow()
+                        await logger.aerror("task_failed", task_id=task.task_id, error=str(e))
+                        return
+        finally:
+            self._semaphore.release()
+
     async def _execute_task(self, task: Task) -> None:
         """Execute a single task with retries and timeout."""
         result = self._results[task.task_id]

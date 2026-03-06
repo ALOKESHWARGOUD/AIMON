@@ -197,9 +197,11 @@ class FingerprintEngine:
     """Central fingerprinting engine."""
     
     def __init__(self):
+        from aimon.fingerprint.video_fingerprinter import VideoFingerprinter as _Video
+        from aimon.fingerprint.audio_fingerprinter import AudioFingerprinter as _Audio
         self.fingerprinters = {
-            "video": VideoFingerprinter(),
-            "audio": AudioFingerprinter(),
+            "video": _Video(),
+            "audio": _Audio(),
             "image": PerceptualHasher(),
             "document": DocumentHasher(),
         }

@@ -40,6 +40,10 @@ class EventBus:
         self._event_log: List[Event] = []
         self._max_log_size = 10000
     
+    async def initialize(self) -> None:
+        """Initialize the event bus (no-op, kept for API consistency)."""
+        await logger.ainfo("event_bus_initialized")
+
     async def subscribe(self, event_type: str, handler: Callable) -> None:
         """
         Subscribe a handler to an event type.
@@ -60,15 +64,15 @@ class EventBus:
             self._handlers[event_type].remove(handler)
             await logger.ainfo("handler_unsubscribed", event_type=event_type)
     
-    async def emit(self, event_type: str, source: str, **data) -> Event:
+    async def emit(self, event_type: str, source: str = "unknown", /, **data) -> "Event":
         """
         Emit an event and invoke all subscribed handlers.
-        
+
         Args:
             event_type: Type of event
-            source: Module that emitted the event
-            **data: Event data
-            
+            source: Module/component that emitted the event (positional-only)
+            **data: Event data (may include keys named ``source``, etc.)
+
         Returns:
             The Event object that was emitted
         """
@@ -79,24 +83,41 @@ class EventBus:
         if len(self._event_log) > self._max_log_size:
             self._event_log.pop(0)
         
-        await logger.ainfo("event_emitted", event=str(event), handlers_count=len(self._handlers.get(event_type, [])))
+        await logger.ainfo("event_emitted", emitted_event=str(event), handlers_count=len(self._handlers.get(event_type, [])))
         
         # Invoke handlers
         handlers = self._handlers.get(event_type, [])
         tasks = []
-        
+
         for handler in handlers:
             try:
-                if inspect.iscoroutinefunction(handler):
-                    tasks.append(handler(event))
+                # Detect handler style:
+                # - handlers accepting **kwargs → call with keyword data (module-style)
+                # - handlers accepting a positional Event → call with the Event object
+                sig = inspect.signature(handler)
+                params = list(sig.parameters.values())
+                has_var_keyword = any(
+                    p.kind == inspect.Parameter.VAR_KEYWORD for p in params
+                )
+
+                if has_var_keyword:
+                    # Module-style: handler(**event.data)
+                    if inspect.iscoroutinefunction(handler):
+                        tasks.append(handler(**event.data))
+                    else:
+                        tasks.append(asyncio.to_thread(handler, **event.data))
                 else:
-                    tasks.append(asyncio.to_thread(handler, event))
+                    # Direct-style: handler(event)
+                    if inspect.iscoroutinefunction(handler):
+                        tasks.append(handler(event))
+                    else:
+                        tasks.append(asyncio.to_thread(handler, event))
             except Exception as e:
                 await logger.aerror("handler_error", handler=handler.__name__, error=str(e))
-        
+
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         return event
     
     async def get_event_log(self, event_type: Optional[str] = None, limit: int = 100) -> List[Event]:
@@ -119,4 +140,9 @@ class EventBus:
     
     async def clear_history(self) -> None:
         """Clear event log."""
+        self._event_log.clear()
+
+    async def clear(self) -> None:
+        """Clear all handlers and event log (test teardown helper)."""
+        self._handlers.clear()
         self._event_log.clear()
