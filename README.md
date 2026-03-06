@@ -335,6 +335,58 @@ async with AIMON(config) as fw:
     # Integrate with monitoring systems
 ```
 
+## 🧪 Test Coverage
+
+AIMON v1 includes **196 automated tests** covering the full framework lifecycle, event pipeline, connectors, fingerprinting, and monitoring engine.
+
+### Test Files
+
+| File                                     | Coverage                                                                                  |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `tests/conftest.py`                      | Shared fixtures: event_bus, runtime, fresh_runtime, memory_storage, all_modules           |
+| `tests/test_runtime_startup.py`          | AIMONCoreRuntime singleton lifecycle, service container registration, start/stop          |
+| `tests/test_module_lifecycle.py`         | UNINITIALIZED → INITIALIZING → READY → SHUTTING_DOWN → STOPPED lifecycle                  |
+| `tests/test_event_pipeline.py`           | Full async pipeline: source_discovered → page_crawled → threat_detected → alert_generated |
+| `tests/test_connectors_real.py`          | Google, Reddit, Telegram, Torrent connectors with fallback                                |
+| `tests/test_crawler.py`                  | Page crawling, event emission, deduplication                                              |
+| `tests/test_database_storage.py`         | MemoryStorage TTL expiry, SQLite CRUD, FileStorage JSON persistence                       |
+| `tests/test_fingerprint.py`              | VideoFingerprinter, AudioFingerprinter determinism & hashing                              |
+| `tests/test_cli.py`                      | CLI commands via CliRunner                                                                |
+| `tests/test_sync_api.py`                 | AIMONSync lifecycle validation                                                            |
+| `tests/test_real_monitoring_pipeline.py` | Multi-query monitoring and event verification                                             |
+| `tests/test_validation_report.py`        | Full subsystem validation report                                                          |
+
+---
+
+## ⚙ Key Design Notes
+
+* `asyncio_mode = "auto"` configured in `pyproject.toml`
+* Singleton isolation via `AIMONCoreRuntime.reset_instance()`
+* Async validation runs inside `ThreadPoolExecutor`
+* Framework core files were **not modified**, existing APIs were reused
+
+---
+
+## 📊 Validation Report (Sample)
+
+```
+AIMON v1 Validation Report
+
+Total Systems Checked: 14
+Passed: 14
+Failed: 0
+
+Performance Metrics
+EventBus: 4132.2 ev/s
+ExecutionEngine: 197.3 t/s
+Pipeline Latency: 9.0 ms
+
+AIMON v1: PRODUCTION READY ✓
+```
+
+<img width="889" height="587" alt="image" src="https://github.com/user-attachments/assets/7b417865-f7d8-4ccb-a18e-af2b4c18594e" />
+
+
 ## Contributing
 
 Contributions welcome! Areas for enhancement:
@@ -362,3 +414,4 @@ For issues, questions, or contributions, visit the GitHub repository.
 ---
 
 **AIMON**: Building intelligent monitoring platforms that scale.
+
