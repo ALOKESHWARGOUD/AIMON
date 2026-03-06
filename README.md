@@ -387,6 +387,40 @@ AIMON v1: PRODUCTION READY ✓
 <img width="889" height="587" alt="image" src="https://github.com/user-attachments/assets/7b417865-f7d8-4ccb-a18e-af2b4c18594e" />
 
 
+## 🖥 AIMON Monitoring Dashboard
+
+The AIMON dashboard provides a real-time visualization of the monitoring pipeline, module status, and threat detection activity.
+
+### Framework Architecture View
+
+![AIMON Architecture](assets/dashboard/aimon-dashboard-architecture.png)
+
+The architecture graph visualizes the AIMON runtime pipeline:
+
+Runtime → Event Bus → Discovery → Crawler → Intelligence → Alerts
+
+---
+
+### Monitoring & Metrics Panel
+
+![AIMON Metrics](assets/dashboard/aimon-dashboard-metrics.png)
+
+The monitoring panel displays:
+
+* Live event stream
+* Threat detection alerts
+* Module health status
+* Framework performance metrics
+* Events per second
+* Task execution latency
+
+* <img width="1906" height="916" alt="image" src="https://github.com/user-attachments/assets/f75101b1-e8ba-41d3-bb0e-be3856aa0fef" />
+* <img width="1886" height="892" alt="image" src="https://github.com/user-attachments/assets/95e95430-f1a3-426e-879b-f2a9554cf442" />
+
+
+
+
+
 ## Contributing
 
 Contributions welcome! Areas for enhancement:
@@ -414,4 +448,5 @@ For issues, questions, or contributions, visit the GitHub repository.
 ---
 
 **AIMON**: Building intelligent monitoring platforms that scale.
+
 
