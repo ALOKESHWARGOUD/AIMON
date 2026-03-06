@@ -64,7 +64,7 @@ class EventBus:
             self._handlers[event_type].remove(handler)
             await logger.ainfo("handler_unsubscribed", event_type=event_type)
     
-    async def emit(self, event_type: str, source: str = "", /, **data) -> "Event":
+    async def emit(self, event_type: str, source: str = "unknown", /, **data) -> "Event":
         """
         Emit an event and invoke all subscribed handlers.
 

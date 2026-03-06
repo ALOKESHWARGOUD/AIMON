@@ -38,7 +38,7 @@ class HackerNewsConnector(BaseConnector):
 
     async def initialize(self) -> None:
         await super().initialize()
-        print(f"[Connector] {self.name} initialised")
+        print(f"[Connector] {self.name} initialized")
 
     async def search(self, query: str, **kwargs) -> List[Dict[str, Any]]:
         """Search HN stories matching *query*."""

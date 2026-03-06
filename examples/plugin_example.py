@@ -35,7 +35,7 @@ class PageCrawledLogger(BaseModule):
         self.received_events: List[Dict[str, Any]] = []
 
     async def _initialize_impl(self):
-        print(f"[Plugin] {self.name} initialised")
+        print(f"[Plugin] {self.name} initialized")
 
     async def _subscribe_to_events(self):
         await self.subscribe_event("page_crawled", self._on_page_crawled)
