@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aimon-framework"
+version = "1.0.0"
+description = "AIMON: AI Monitoring Framework - Enterprise-grade distributed system for detecting leaked digital assets"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "AIMON Framework Team", email = "team@aimon.io"}
+]
+keywords = ["monitoring", "leak-detection", "distributed-systems", "framework", "async"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: Log Analysis",
+    "Topic :: System :: Monitoring",
+]
+
+dependencies = [
+    "aiohttp>=3.8.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "aiofiles>=23.0.0",
+    "structlog>=23.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+fingerprint = [
+    "opencv-python>=4.7.0",
+    "librosa>=0.10.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+]
+storage-db = [
+    "sqlalchemy>=2.0.0",
+    "asyncpg>=0.28.0",
+]
+storage-redis = [
+    "aioredis>=2.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.20.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+    "sphinx>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/aimon/framework"
+Documentation = "https://aimon.readthedocs.io"
+Repository = "https://github.com/aimon/framework"
+Issues = "https://github.com/aimon/framework/issues"
+
+[project.scripts]
+aimon = "aimon.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aimon*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --cov=aimon --cov-report=html --cov-report=term-missing"
+
+[tool.coverage.run]
+branch = true
+source = ["aimon"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
