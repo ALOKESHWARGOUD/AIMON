@@ -4,7 +4,7 @@ AIMON Framework - Enterprise-grade distributed system for detecting leaked digit
 A modular, async-first framework for building intelligent monitoring and leak detection systems.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "AIMON Framework Team"
 __license__ = "MIT"
 

@@ -142,7 +142,7 @@ class BaseModule(ABC):
         if not self.event_bus:
             raise RuntimeError(f"Module {self.name} has no event bus")
         
-        await self.event_bus.emit(event_type, source=self.name, **data)
+        await self.event_bus.emit(event_type, self.name, **data)
     
     def is_ready(self) -> bool:
         """Check if module is ready."""
