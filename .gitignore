@@ -45,6 +45,9 @@ ENV/
 # Logs
 *.log
 
+# Runtime artifacts
+alerts_log.json
+
 # OS
 .DS_Store
 Thumbs.db
