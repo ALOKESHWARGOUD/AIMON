@@ -133,7 +133,6 @@ function NodeMesh({ node, isActive, onHover, onClick }: NodeMeshProps) {
         color={node.color}
         anchorX="center"
         anchorY="middle"
-        font={undefined}
       >
         {node.label}
       </Text>
