@@ -15,7 +15,7 @@ export function generateMockEvent(): FrameworkEvent {
   const module = modules[Math.floor(Math.random() * modules.length)]
 
   return {
-    id: Math.random().toString(36).substr(2, 9),
+    id: Math.random().toString(36).slice(2, 11),
     type,
     module,
     timestamp: new Date().toISOString(),
@@ -32,7 +32,7 @@ export function generateMockThreat(): ThreatData {
   const domains = ['pastebin.com', 'mega.nz', 'mediafire.com', 'dropbox.com', 'telegram.me']
   const sources = ['google', 'reddit', 'telegram', 'torrent']
   return {
-    id: Math.random().toString(36).substr(2, 9),
+    id: Math.random().toString(36).slice(2, 11),
     url: `${domains[Math.floor(Math.random() * domains.length)]}/leak${Math.floor(Math.random() * 1000)}`,
     risk_score: Math.round((0.5 + Math.random() * 0.5) * 100) / 100,
     source: sources[Math.floor(Math.random() * sources.length)],

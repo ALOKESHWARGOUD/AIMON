@@ -8,7 +8,7 @@ import ModuleStatus from '@/components/ModuleStatus'
 import MetricsCharts from '@/components/MetricsCharts'
 import ThreatTable from '@/components/ThreatTable'
 import { FrameworkEvent, ThreatData, ModuleStatusData, MetricsData, getSocket, disconnectSocket } from '@/lib/socket'
-import { generateMockEvent, generateMockModuleStatus, generateMockMetrics } from '@/lib/api'
+import { generateMockEvent, generateMockMetrics } from '@/lib/api'
 import { motion } from 'framer-motion'
 
 // Dynamic import for Three.js component (no SSR)
@@ -28,10 +28,13 @@ export default function DashboardPage() {
   const [connected, setConnected] = useState(false)
   const [events, setEvents] = useState<FrameworkEvent[]>([])
   const [threats, setThreats] = useState<ThreatData[]>([])
-  const [modules, setModules] = useState<ModuleStatusData[]>(generateMockModuleStatus())
-  const [metricsHistory, setMetricsHistory] = useState<MetricsData[]>(() =>
-    Array.from({ length: 20 }, () => generateMockMetrics())
-  )
+  const [modules, setModules] = useState<ModuleStatusData[]>([
+    { name: 'discovery', status: 'idle', events_processed: 0, tasks_running: 0 },
+    { name: 'crawler', status: 'idle', events_processed: 0, tasks_running: 0 },
+    { name: 'intelligence', status: 'idle', events_processed: 0, tasks_running: 0 },
+    { name: 'alerts', status: 'idle', events_processed: 0, tasks_running: 0 },
+  ])
+  const [metricsHistory, setMetricsHistory] = useState<MetricsData[]>([])
   const [activeNodes, setActiveNodes] = useState<string[]>([])
   const demoIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const metricsIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -48,7 +51,7 @@ export default function DashboardPage() {
     }
     const nodeId = nodeMap[event.module]
     if (nodeId) {
-      setActiveNodes(prev => [...new Set([...prev, nodeId, 'runtime', 'eventbus'])])
+      setActiveNodes(prev => Array.from(new Set([...prev, nodeId, 'runtime', 'eventbus'])))
       setTimeout(() => {
         setActiveNodes(prev => prev.filter(n => n !== nodeId))
       }, 1500)
@@ -126,8 +129,10 @@ export default function DashboardPage() {
     }
   }, [connected, addEvent])
 
-  // Metrics update interval
+  // Metrics update interval + initial data
   useEffect(() => {
+    // Initialize with some historical data
+    setMetricsHistory(Array.from({ length: 20 }, () => generateMockMetrics()))
     metricsIntervalRef.current = setInterval(() => {
       setMetricsHistory(prev => [...prev, generateMockMetrics()].slice(-50))
     }, 2000)

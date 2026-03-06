@@ -85,7 +85,7 @@ export default function EventStream({ events }: EventStreamProps) {
                 <span className={`${eventColors[event.type] || eventColors.default} shrink-0`}>
                   {event.type}
                 </span>
-                {event.data?.url && (
+                {event.data?.url !== undefined && (
                   <span className="text-slate-500 truncate">{String(event.data.url)}</span>
                 )}
                 {event.data?.risk_score !== undefined && (
