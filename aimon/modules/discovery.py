@@ -6,10 +6,23 @@ Emits: source_discovered events when new sources are found.
 
 from typing import Dict, Any, List
 import asyncio
+import urllib.parse
 from aimon.core.base_module import BaseModule
 import structlog
 
 logger = structlog.get_logger(__name__)
+
+# Realistic platform URL patterns used when searching for leaked content.
+# Each entry is (platform_id, url_template, source_type).
+# ``{q}`` is replaced with the URL-encoded query; ``{slug}`` with a
+# lower-cased, underscore-joined version of the query.
+_PLATFORM_SOURCES = [
+    ("reddit",   "https://www.reddit.com/r/learnprogramming/search/?q={q}", "forum"),
+    ("telegram", "https://t.me/s/{slug}",                                    "messaging"),
+    ("gdrive",   "https://drive.google.com/drive/search?q={q}",              "storage"),
+    ("1337x",    "https://1337x.to/search/{q}/1/",                           "torrent"),
+    ("scribd",   "https://www.scribd.com/search?query={q}",                  "document"),
+]
 
 
 class DiscoveryModule(BaseModule):
@@ -52,15 +65,17 @@ class DiscoveryModule(BaseModule):
             # Emit event
             await self.emit_event("search_started", query=query, filters=filters or {})
             
-            # Simulate discovery (real implementation would use connectors)
-            sources = [
-                {
-                    "id": "source_1",
-                    "name": "search_result_1",
-                    "url": "https://example.com/search?q=" + query,
-                    "source_type": "web",
-                }
-            ]
+            # Build realistic sources across multiple platforms for the given query.
+            q = urllib.parse.quote_plus(query)
+            slug = query.lower().replace(" ", "_")
+            for i, (platform, url_tpl, source_type) in enumerate(_PLATFORM_SOURCES, 1):
+                sources.append({
+                    "id": f"source_{i}",
+                    "name": f"{platform}:{query}",
+                    "url": url_tpl.format(q=q, slug=slug),
+                    "source_type": source_type,
+                    "platform": platform,
+                })
             
             # Emit source discovered events
             for source in sources:
