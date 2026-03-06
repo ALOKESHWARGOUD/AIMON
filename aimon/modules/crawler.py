@@ -12,6 +12,31 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
+# Simulated page content templates keyed by platform identifier.
+# ``{name}`` is replaced with the source name at crawl time.
+_PLATFORM_CONTENT: Dict[str, str] = {
+    "reddit":   (
+        "Forum thread: users discussing {name}. "
+        "Several replies include links to free download mirrors."
+    ),
+    "telegram": (
+        "Telegram channel sharing {name}. "
+        "Free lectures and torrent links are distributed here."
+    ),
+    "gdrive": (
+        "Google Drive folder containing {name} course materials. "
+        "Files available for free download via drive.google.com."
+    ),
+    "1337x": (
+        "Torrent listing: {name} – full course for free. "
+        "Torrent file and magnet link provided."
+    ),
+    "scribd": (
+        "Document library entry for {name}. "
+        "Lecture notes and course materials available."
+    ),
+}
+
 
 class CrawlerModule(BaseModule):
     """
@@ -50,12 +75,20 @@ class CrawlerModule(BaseModule):
         try:
             await logger.ainfo("crawl_started", source_id=source_id)
             
-            # Simulate crawling (real implementation would make HTTP requests)
+            # Build contextual page content based on the source's platform.
+            platform = source.get("platform", "")
+            name = source.get("name", source_id)
+            content_tpl = _PLATFORM_CONTENT.get(
+                platform,
+                "Web page content related to {name}.",
+            )
+            content = content_tpl.format(name=name)
+
             page_data = {
                 "source_id": source_id,
                 "url": source.get("url"),
                 "title": f"Page from {source_id}",
-                "content": f"Extracted content from {source.get('name')}",
+                "content": content,
                 "metadata": {
                     "status_code": 200,
                     "content_type": "text/html",
