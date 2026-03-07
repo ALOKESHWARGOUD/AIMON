@@ -5,7 +5,9 @@ Subscribes to: threat_detected, match_found
 Emits: alert_generated, alert_sent
 """
 
-from typing import Dict, Any, List
+from __future__ import annotations
+
+from typing import Any, Dict, List
 import asyncio
 from datetime import datetime
 from aimon.core.base_module import BaseModule
@@ -18,8 +20,8 @@ class AlertsModule(BaseModule):
     """
     Generates and manages alerts for detected threats.
     
-    Processes threat_detected events from IntelligenceModule.
-    Generates alerts and notifies users.
+    Processes threat_detected events from IntelligenceModule or RiskEngineModule.
+    Generates enhanced alerts including network context and signal details.
     """
     
     async def _initialize_impl(self) -> None:
@@ -47,7 +49,7 @@ class AlertsModule(BaseModule):
             Generated alert
         """
         try:
-            alert = {
+            alert: Dict[str, Any] = {
                 "alert_id": f"alert_{len(self.alerts) + 1}",
                 "threat_id": threat.get("source_id"),
                 "threat_level": threat.get("threat_level", "unknown"),
@@ -56,6 +58,14 @@ class AlertsModule(BaseModule):
                 "detected_assets": threat.get("detected_assets", []),
                 "timestamp": datetime.utcnow().isoformat(),
                 "status": "new",
+                # Enhanced fields
+                "brand": threat.get("brand", ""),
+                "platform": threat.get("platform", "unknown"),
+                "url": threat.get("url", ""),
+                "risk_score": float(threat.get("risk_score", threat.get("threat_score", 0))),
+                "risk_level": threat.get("risk_level", threat.get("threat_level", "unknown")),
+                "detected_network": threat.get("detected_network", {}),
+                "signals": threat.get("signals", []),
             }
             
             self.alerts.append(alert)
@@ -102,7 +112,7 @@ class AlertsModule(BaseModule):
     
     async def _on_threat_detected(self, **data) -> None:
         """Handle threat_detected event."""
-        threat = data.get("threat", {})
+        threat = data.get("threat", data)
         
         # Generate alert
         alert = await self.generate_alert(threat)
