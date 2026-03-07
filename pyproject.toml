@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "AIMON Framework Team", email = "team@aimon.io"}
+    {name = "Alokeshwar Goud", email = "alokeshwargoud@users.noreply.github.com"}
 ]
 keywords = ["monitoring", "leak-detection", "distributed-systems", "framework", "async"]
 classifiers = [
@@ -89,10 +89,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/aimon/framework"
-Documentation = "https://aimon.readthedocs.io"
-Repository = "https://github.com/aimon/framework"
-Issues = "https://github.com/aimon/framework/issues"
+Homepage = "https://github.com/ALOKESHWARGOUD/AIMON"
+Documentation = "https://github.com/ALOKESHWARGOUD/AIMON/tree/main/docs"
+Repository = "https://github.com/ALOKESHWARGOUD/AIMON"
+Issues = "https://github.com/ALOKESHWARGOUD/AIMON/issues"
 
 [project.scripts]
 aimon = "aimon.cli.main:cli"

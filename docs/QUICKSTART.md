@@ -6,18 +6,36 @@
 pip install aimon-framework
 ```
 
-### Optional extras
+---
+
+## 30-Second Demo
+
+After installing, run the included demo:
 
 ```bash
-# PostgreSQL async driver
-pip install "aimon-framework[storage-postgres]"
-
-# Video/audio fingerprinting (OpenCV + librosa)
-pip install "aimon-framework[fingerprint]"
-
-# Everything
-pip install "aimon-framework[all]"
+git clone https://github.com/ALOKESHWARGOUD/AIMON.git
+cd AIMON
+pip install -e .
+python examples/demo_leak_monitor.py
 ```
+
+No API keys needed. The demo uses memory storage and shows the full pipeline.
+
+---
+
+## Optional Extras
+
+| Extra                 | Installs              | Enables                              |
+|-----------------------|-----------------------|--------------------------------------|
+| `[telegram]`          | telethon              | Telegram channel scanning            |
+| `[neo4j]`             | neo4j, networkx       | Graph-based leak network storage     |
+| `[fingerprint]`       | opencv, librosa, PIL  | Video/audio/image fingerprinting     |
+| `[postgres]`          | asyncpg, sqlalchemy   | PostgreSQL storage backend           |
+| `[redis]`             | redis                 | Redis storage backend                |
+| `[monitoring]`        | prometheus-client     | Prometheus metrics export            |
+| `[storage-postgres]`  | asyncpg               | Lightweight async PostgreSQL driver  |
+| `[dev]`               | pytest, black, ruff   | Development and testing tools        |
+| `[all]`               | Everything above      | Full installation                    |
 
 ---
 
@@ -150,15 +168,21 @@ await runtime.register_module("my_module", MyModule("my_module"))
 
 ## Environment Variable Configuration
 
-AIMON reads the following environment variables (via `python-dotenv`):
+Copy `.env.example` to `.env` and fill in the values you need.
 
-| Variable                     | Description                            | Default                        |
-|------------------------------|----------------------------------------|--------------------------------|
-| `AIMON_DATABASE_URL`         | Async SQLAlchemy database URL          | `sqlite+aiosqlite:///aimon.db` |
-| `AIMON_LOG_LEVEL`            | Log level (`DEBUG`, `INFO`, …)        | `INFO`                         |
-| `AIMON_MAX_CONCURRENT`       | Max concurrent execution engine tasks  | `10`                           |
-| `AIMON_GOOGLE_API_KEY`       | Google Custom Search API key           | *(none)*                       |
-| `AIMON_GOOGLE_SEARCH_ENGINE` | Google Custom Search engine ID         | *(none)*                       |
+| Variable                        | Description                         | Required For          |
+|---------------------------------|-------------------------------------|-----------------------|
+| `AIMON_GOOGLE_API_KEY`          | Google Custom Search API key        | Web discovery         |
+| `AIMON_GOOGLE_SEARCH_ENGINE_ID` | Google Custom Search engine ID      | Web discovery         |
+| `AIMON_TELEGRAM_API_ID`         | Telegram API ID (from my.telegram)  | Telegram scanning     |
+| `AIMON_TELEGRAM_API_HASH`       | Telegram API hash                   | Telegram scanning     |
+| `AIMON_NEO4J_URI`               | Neo4j connection URI                | Graph storage         |
+| `AIMON_NEO4J_USER`              | Neo4j username                      | Graph storage         |
+| `AIMON_NEO4J_PASSWORD`          | Neo4j password                      | Graph storage         |
+| `AIMON_REDIS_URL`               | Redis connection URL                | Redis storage         |
+| `AIMON_DATABASE_URL`            | Async SQLAlchemy database URL       | All (default: SQLite) |
+| `AIMON_LOG_LEVEL`               | Logging level (DEBUG/INFO/WARNING)  | All                   |
+| `AIMON_MAX_CONCURRENT`          | Max concurrent execution tasks      | All (default: 10)     |
 
 Create a `.env` file in your project root:
 
@@ -166,5 +190,5 @@ Create a `.env` file in your project root:
 AIMON_DATABASE_URL=postgresql+asyncpg://user:pass@localhost/aimon
 AIMON_LOG_LEVEL=DEBUG
 AIMON_GOOGLE_API_KEY=AIza...
-AIMON_GOOGLE_SEARCH_ENGINE=cx:...
+AIMON_GOOGLE_SEARCH_ENGINE_ID=cx:...
 ```
