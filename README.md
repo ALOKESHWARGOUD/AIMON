@@ -2,8 +2,9 @@
 
 **AIMON** is a production-ready, distributed systems framework for building intelligent monitoring, leak detection, and intelligence analysis platforms. It's designed like Scrapy and Airflow—providing a true developer framework, not just a monitoring script.
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+<a href="https://pypi.org/project/aimon-framework/"><img src="https://badge.fury.io/py/aimon-framework.svg"></a>
+<a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.9+-blue.svg"></a>
+<a><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 
 ## Features
 
@@ -35,28 +36,36 @@
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/aimon.git
-cd aimon
+pip install aimon-framework
+```
+
+Or from source:
+
+```bash
+git clone https://github.com/ALOKESHWARGOUD/AIMON.git
+cd AIMON
 pip install -e ".[dev]"
+```
+
+### Quick Demo
+
+```bash
+python examples/demo_leak_monitor.py
 ```
 
 ### Basic Usage (Async)
 
 ```python
-from aimon import AIMON
 import asyncio
+from aimon import AIMON
 
 async def main():
-    async with AIMON() as framework:
-        # Search for sources
-        sources = await framework.search_sources("course download")
-        
-        # Crawler, intelligence, and alerts automatically process
-        # Get results
-        threats = await framework.get_threats()
-        alerts = await framework.get_alerts_list()
-        
-        print(f"Found {len(threats)} threats in {len(sources)} sources")
+    async with AIMON() as fw:
+        report = await fw.monitor.brand("YourBrand")
+        print(f"Risk Level: {report.risk_level}")
+        print(f"Risk Score: {report.risk_score:.4f}")
+        print(f"Sources Found: {report.sources_found}")
+        print(f"Alerts: {len(report.alerts)}")
 
 asyncio.run(main())
 ```
@@ -437,9 +446,10 @@ MIT License - See LICENSE file
 
 ## Documentation
 
-- [FRAMEWORK_DESIGN.md](docs/FRAMEWORK_DESIGN.md) - Complete architecture
-- [QUICKSTART.md](docs/QUICKSTART.md) - Getting started guide
-- [API.md](docs/API.md) - API reference
+- [docs/QUICKSTART.md](docs/QUICKSTART.md) - Getting started guide
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Complete architecture
+- [docs/PLUGINS.md](docs/PLUGINS.md) - Plugin and connector extension guide
+- [docs/use_cases.md](docs/use_cases.md) - Real-world use cases
 
 ## Contact & Support
 
