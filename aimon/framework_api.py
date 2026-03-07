@@ -18,6 +18,9 @@ Example usage:
         # Get results
         threats = await framework.get_threats()
         alerts = await framework.get_alerts()
+        
+        # Run full brand leak scan
+        report = await framework.monitor.brand("DocTutorials")
 """
 
 from typing import Any, Dict, List, Optional
@@ -31,9 +34,15 @@ from aimon.modules import (
     CrawlerModule,
     IntelligenceModule,
     AlertsModule,
+    TelegramDiscoveryModule,
+    LeakSignalModule,
+    NetworkMapperModule,
+    VerificationModule,
 )
+from aimon.intelligence.risk_engine import RiskEngineModule
 from aimon.storage import MemoryStorage
 from aimon.observability import MetricsCollector, HealthMonitor
+from aimon.monitor.brand_monitor import BrandMonitor
 
 logger = structlog.get_logger(__name__)
 
@@ -48,6 +57,7 @@ class AIMON:
     - Content analysis
     - Threat detection
     - Alert generation
+    - Brand leak monitoring
     
     Can be used as context manager or manually.
     """
@@ -70,6 +80,16 @@ class AIMON:
         self.intelligence = None
         self.alerts = None
         self.storage = None
+
+        # New intelligence modules
+        self.telegram_discovery = None
+        self.leak_signal = None
+        self.network_mapper = None
+        self.verification = None
+        self.risk_engine = None
+
+        # High-level monitor API
+        self.monitor: BrandMonitor = BrandMonitor(self)
         
         self._initialized = False
     
@@ -98,11 +118,21 @@ class AIMON:
             self.crawler = CrawlerModule("crawler")
             self.intelligence = IntelligenceModule("intelligence")
             self.alerts = AlertsModule("alerts")
+            self.telegram_discovery = TelegramDiscoveryModule("telegram_discovery")
+            self.leak_signal = LeakSignalModule("leak_signal")
+            self.network_mapper = NetworkMapperModule("network_mapper")
+            self.verification = VerificationModule("verification")
+            self.risk_engine = RiskEngineModule("risk_engine")
             
             await self.runtime.register_module("discovery", self.discovery)
             await self.runtime.register_module("crawler", self.crawler)
             await self.runtime.register_module("intelligence", self.intelligence)
             await self.runtime.register_module("alerts", self.alerts)
+            await self.runtime.register_module("telegram_discovery", self.telegram_discovery, self.config)
+            await self.runtime.register_module("leak_signal", self.leak_signal)
+            await self.runtime.register_module("network_mapper", self.network_mapper, self.config)
+            await self.runtime.register_module("verification", self.verification)
+            await self.runtime.register_module("risk_engine", self.risk_engine)
             
             # Start runtime
             await self.runtime.start()
