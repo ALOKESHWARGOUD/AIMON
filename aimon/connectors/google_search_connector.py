@@ -8,7 +8,7 @@ scraping as fallback.  Selectolax is used for HTML parsing performance.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import aiohttp
 import structlog
@@ -18,7 +18,7 @@ from aimon.connectors.base import BaseConnector
 logger = structlog.get_logger(__name__)
 
 # Platform inference patterns (url substring → platform label)
-_PLATFORM_PATTERNS: List[tuple[str, str]] = [
+_PLATFORM_PATTERNS: List[Tuple[str, str]] = [
     ("t.me", "telegram"),
     ("telegram.me", "telegram"),
     (".torrent", "torrent"),

@@ -8,7 +8,7 @@ Emits: leak_signal_detected
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import structlog
 
@@ -17,7 +17,7 @@ from aimon.core.base_module import BaseModule
 logger = structlog.get_logger(__name__)
 
 # URL patterns that indicate a leak signal
-_URL_LEAK_PATTERNS: List[tuple[re.Pattern, str]] = [
+_URL_LEAK_PATTERNS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r"drive\.google\.com", re.I), "url_pattern"),
     (re.compile(r"mega\.(?:nz|co\.nz)", re.I), "url_pattern"),
     (re.compile(r"t\.me/(?:\+|joinchat/)", re.I), "invite_link"),
